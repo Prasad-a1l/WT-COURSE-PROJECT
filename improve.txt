@@ -1,0 +1,1 @@
+fix the logic of words and map wherer locate it witrh respect to its originbal countary and fine tune it with the origin etmology of words

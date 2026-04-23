@@ -1,0 +1,238 @@
+Word Migration Visualizer - Project Information
+
+1. Project Purpose
+
+This is a Next.js web application that:
+- Lets the user enter an English word.
+- Sends the word to Google Gemini using the `@google/generative-ai` SDK.
+- Requests structured etymology output in JSON from the model.
+- Parses the returned etymology stages and renders them on a D3 world map.
+- Displays an AI-generated narrative summary, a "did you know" fact, and a timeline slider.
+- Animates geographic migration pins along the reconstructed chain.
+
+The application is designed for educational visualization, not as a definitive historical reference.
+
+---
+
+2. Tech Stack
+
+- Next.js 16.2.3 (App Router)
+- React 19.2.4
+- TypeScript 5
+- Tailwind CSS v4
+- D3.js v7
+- TopoJSON client
+- world-atlas country geometry data
+- Google Gemini via `@google/generative-ai`
+
+Key scripts:
+- `npm install`
+- `npm run dev`
+- `npm run build`
+- `npm start`
+
+---
+
+3. Architecture Overview
+
+Frontend:
+- `app/page.tsx`
+  - Client component handling word input, loading state, errors, and API calls.
+  - Initiates the backend request to `/api/etymology`.
+  - Controls timeline playback and highlights the active stage.
+
+Backend API:
+- `app/api/etymology/route.ts`
+  - Server route that validates requests.
+  - Reads `GEMINI_API_KEY` from environment.
+  - Queries Gemini and parses the returned JSON.
+  - Validates stage data and returns the processed response.
+
+Data Processing:
+- `lib/gemini.ts`
+  - Constructs the Gemini prompt.
+  - Invokes `GoogleGenerativeAI` and requests JSON-only output.
+
+- `lib/processEtymology.ts`
+  - Parses approximate year strings into sortable numeric values.
+  - Sorts stages chronologically.
+  - Adds longitude/latitude coordinates by mapping region strings.
+
+- `lib/regions.ts`
+  - Maps free-text region/language labels to approximate geographic coordinates.
+  - Uses heuristics and string matching against a curated list of entries.
+
+- `lib/types.ts`
+  - Defines TypeScript types for model output and enriched stage data.
+
+---
+
+4. UI Components
+
+- `SearchBar.tsx`
+  - Input field and submit button.
+  - Prevents submission when disabled or empty.
+
+- `LoadingSpinner.tsx`
+  - Displays an animated spinner and user-facing loading text.
+
+- `WordBrief.tsx`
+  - Shows the AI-generated summary and did-you-know fact.
+
+- `StageCallout.tsx`
+  - Displays the current etymology stage details.
+  - Shows progress percent plus year/language/region cards.
+
+- `PinCard.tsx`
+  - Reusable styled card container for UI sections.
+
+- `MigrationMap.tsx`
+  - Renders the D3 world map with country shapes.
+  - Projects stage coordinates and draws a route line.
+  - Animates nodes and route transitions.
+  - Shows a floating current-stage card and hover tooltip.
+  - Uses `ResizeObserver` for responsive resizing.
+
+---
+
+5. Data Flow
+
+1. User enters a word and submits it.
+2. Frontend posts JSON `{ word }` to `/api/etymology`.
+3. Backend validates input and environment key.
+4. Backend calls Gemini with a prompt requesting strict JSON.
+5. Backend extracts JSON from Gemini response text.
+6. Backend validates stage structure and normalizes output.
+7. Backend processes stages with coordinates and sort order.
+8. Frontend receives `stages`, `brief`, and `model`.
+9. Frontend renders the narrative, timeline, and animated map.
+
+---
+
+6. Validation and Behavior
+
+API route validation:
+- Requires `GEMINI_API_KEY`.
+- Accepts a non-empty word of up to 120 characters.
+- Rejects invalid JSON responses.
+- Requires a non-empty `stages` array.
+- Ensures every stage contains all required string fields.
+
+Model response handling:
+- Supports raw JSON or code-fenced JSON from Gemini.
+- Attempts to parse JSON even if Gemini wraps it in markdown.
+- Returns clear errors if JSON is invalid or missing expected fields.
+
+Frontend timeline behavior:
+- Automatically advances through stages every 1450ms while playing.
+- Stops when the final stage is reached.
+- Allows manual slider control.
+- Offers a replay button to restart the timeline.
+
+---
+
+7. Configuration
+
+Environment variables:
+- `GEMINI_API_KEY` (required)
+- `GEMINI_MODEL` (optional; defaults to `gemini-2.5-flash-lite`)
+
+Example `.env.local`:
+```
+GEMINI_API_KEY=your_api_key_here
+GEMINI_MODEL=gemini-2.5-flash-lite
+```
+
+Note:
+- Do not commit `.env.local` to source control.
+- The README mentions `.env.local.example`, but if absent, manually create `.env.local`.
+
+---
+
+8. Styling and Layout
+
+- `app/layout.tsx`
+  - Loads Google fonts `Geist` and `Geist_Mono`.
+  - Applies a global `dark` theme class.
+  - Sets page metadata and description.
+
+- `app/globals.css`
+  - Imports Tailwind CSS.
+  - Defines theme CSS variables and typography.
+  - Styles card surfaces and component scaffolding.
+
+- `styles/theme.css`
+  - Adds background gradients and page grid overlay.
+  - Defines `.shell` content width wrapper.
+  - Applies custom styling for the range slider.
+
+---
+
+9. Important Files
+
+- `app/page.tsx`
+- `app/layout.tsx`
+- `app/api/etymology/route.ts`
+- `lib/gemini.ts`
+- `lib/processEtymology.ts`
+- `lib/regions.ts`
+- `lib/types.ts`
+- `components/MigrationMap.tsx`
+- `components/SearchBar.tsx`
+- `components/WordBrief.tsx`
+- `components/StageCallout.tsx`
+- `components/LoadingSpinner.tsx`
+- `components/PinCard.tsx`
+- `styles/theme.css`
+- `app/globals.css`
+
+---
+
+10. Running the Project
+
+From the project root:
+```
+npm install
+npm run dev
+```
+Then open:
+```
+http://localhost:3000
+```
+
+For production build:
+```
+npm run build
+npm start
+```
+
+---
+
+11. Presentation Notes
+
+Focus on:
+- The separation of frontend UI from backend AI integration.
+- Use of modern Next.js App Router with a server API route.
+- The data pipeline from model text to validated structured output.
+- D3 map rendering with responsive animation and country geometry.
+- UX details: search form, loading state, timeline control, replay button, hover tooltip.
+- The app is intentionally cautious about model-generated content and labels outputs as illustrative.
+
+---
+
+12. Known Limitations
+
+- Gemini responses can be malformed or include unexpected text.
+- The region-to-coordinate mapping is heuristic and approximate.
+- The map provides illustrative locations, not precise historical geography.
+- Model rate limits depend on selected Gemini model.
+
+---
+
+13. Recommended Project Improvements
+
+- Add stronger model prompting or output schema enforcement.
+- Add fallback coordinates or map pin validation.
+- Improve error handling for rate limit and API quota issues.
+- Expand region mapping names and add better geographic matching.
+- Add a documentation page or README section for users.

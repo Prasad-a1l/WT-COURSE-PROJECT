@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { EtymologyBrief, EtymologyStage } from "@/lib/types";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { MigrationMap } from "@/components/MigrationMap";
+import { MigrationMapFlat } from "@/components/MigrationMapFlat";
 import { PinCard } from "@/components/PinCard";
 import { SearchBar } from "@/components/SearchBar";
 import { StageCallout } from "@/components/StageCallout";
@@ -217,7 +217,7 @@ export default function Home() {
                     />
                   </label>
                   <div className="-mx-5 mt-5 border-t border-white/10 sm:-mx-6">
-                    <MigrationMap
+                    <MigrationMapFlat
                       stages={stages}
                       highlightIndex={highlightIndex}
                       embedded
