@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Word Migration Visualizer
 
-## Getting Started
+Next.js app that asks Gemini for an etymology chain, maps regions to coordinates, and animates migration on a D3 world map (TopoJSON → GeoJSON).
 
-First, run the development server:
+## Setup
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Copy environment file:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+   ```bash
+   copy .env.local.example .env.local
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+   Set `GEMINI_API_KEY` to your [Google AI Studio](https://aistudio.google.com/apikey) key.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Install and run:
 
-## Learn More
+   ```bash
+   npm install
+   npm run dev
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+3. Open [http://localhost:3000](http://localhost:3000).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+If you see **429 / quota** errors, limits are **per model**. The app defaults to **`gemini-2.5-flash-lite`**. Set `GEMINI_MODEL` in `.env.local` (e.g. `gemini-2.5-flash`) per [models](https://ai.google.dev/gemini-api/docs/models/gemini) and [rate limits](https://ai.google.dev/gemini-api/docs/rate-limits). Older IDs like `gemini-1.5-flash` may return **404**.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Stack
 
-## Deploy on Vercel
+- Next.js (App Router), Tailwind CSS, D3.js, `@google/generative-ai`, `world-atlas` + `topojson-client`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `app/` — pages, `globals.css`, API route `app/api/etymology/route.ts`
+- `components/` — search, map, loading
+- `lib/` — types, region → lat/lon, processing
+- `styles/` — `theme.css`
